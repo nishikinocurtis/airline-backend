@@ -2,12 +2,11 @@ package edu.curtis.airlinebackend.entity;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
-public class Record {
-    Purchase purchase;
-    Customer customer;
-    BookingAgent bookingAgent;
-    Flight flight;
+public class Purchase {
+    String ticketId, customerEmail, bookingAgentId;
+    Date purchaseDate;
 }
