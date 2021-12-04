@@ -1,13 +1,15 @@
 package edu.curtis.airlinebackend.entity;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.lang.String;
-import lombok.AllArgsConstructor;
+
+import java.util.List;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class Ticket {
-    String ticketId, airlineName, flightNum;
+public class ListKVDateData {
+    String key;
+    List<DateRange> data;
 }

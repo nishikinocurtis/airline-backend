@@ -2,6 +2,7 @@ package edu.curtis.airlinebackend.mapper;
 
 import edu.curtis.airlinebackend.entity.*;
 import org.apache.ibatis.annotations.*;
+import org.apache.ibatis.javassist.compiler.ast.Pair;
 import org.springframework.stereotype.Repository;
 
 import java.util.Date;
@@ -20,6 +21,9 @@ public interface MyBatisMapper {
     @Select("SELECT * FROM flight f " +
             "WHERE departure_airport = #{deptPort} AND arrival_airport = #{arriPort} AND deptDate = #{date}")
     List<Flight> getFlightByDeptArriDate(String deptPort, String arriPort, Date date);
+
+    @Select("SELECT email FROM #{role} WHERE email = #{Id} AND password = #{pwd}")
+    List<String> loginVerification(@Param("Id")String Id, @Param("pwd")String pwd, @Param("role")String role);
 
     //TODO: Deal with pattern %% in Service.
     @Select("SELECT * FROM airport ap " +
@@ -56,21 +60,21 @@ public interface MyBatisMapper {
             "WHERE p.booking_agent_id = #{agentId} AND p.purchase_date >= #{dateFrom} AND p.purchase_date <= #{dateTo} " +
             "JOIN ticket t ON t.ticket_id = p.ticket_id " +
             "JOIN flight f ON t.flight_num = f.flight_num")
-    double getTotalSellsByEmailAndDate(String agentId, Date dateFrom, Date dateTo);
+    double getTotalSellsByIdAndDate(String agentId, Date dateFrom, Date dateTo);
 
     @Select("SELECT c.email, COUNT(*) FROM purchase p" +
             "WHERE p.booking_agent_id = #{agentId} AND p.purchase_date >= #{dateFrom} AND p.purchase_date <= #{dateTo}" +
             "JOIN ticket t ON t.ticket_id = p.ticket_id" +
             "JOIN flight f ON t.flight_num = f.flight_num" +
             "GROUP BY c.email")
-    List<Map<String, Integer>> getCustomerRankByTicketNumber(String agentId, Date dateFrom, Date dateTo);
+    List<KVData> getCustomerRankByTicketNumber(String agentId, Date dateFrom, Date dateTo);
 
     @Select("SELECT c.email, SUM(f.price) FROM purchase p " +
             "WHERE p.booking_agent_id = #{agentId} AND p.purchase_date >= #{dateFrom} AND p.purchase_date <= #{dateTo} " +
             "JOIN ticket t ON t.ticket_id = p.ticket_id " +
             "JOIN flight f ON t.flight_num = f.flight_num " +
             "GROUP BY c.email")
-    List<Map<String, Double>> getCustomerRankByTicketPrice(String agentId, Date dateFrom, Date dateTo);
+    List<KVData> getCustomerRankByTicketPrice(String agentId, Date dateFrom, Date dateTo);
 
     // Staff Part
     @Select("SELECT * FROM flight WHERE airline_name = #{airlineName}")
@@ -143,5 +147,8 @@ public interface MyBatisMapper {
             "GROUP BY ap.name " +
             "ORDER BY total DESC LIMIT #{limits}")
     List<Map<String, Integer>> getDestinations(Date dateFrom, Date dateTo, int limits);
+
+    @Select("SELECT username FROM airline_staff WHERE username = #{Id} AND password = #{pwd}")
+    List<String> staffLoginVerification(String Id, String pwd);
 }
 
