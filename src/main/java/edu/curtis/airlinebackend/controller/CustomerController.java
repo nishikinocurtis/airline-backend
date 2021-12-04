@@ -4,9 +4,6 @@ import edu.curtis.airlinebackend.entity.*;
 import edu.curtis.airlinebackend.service.MyBatisService;
 import edu.curtis.airlinebackend.utility.Util;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -18,8 +15,6 @@ import java.util.List;
 public class CustomerController {
     @Autowired
     MyBatisService myBatisService;
-    @Autowired
-    private PlatformTransactionManager transactionManager;
 
     @GetMapping
     public String init() { return "API init"; }

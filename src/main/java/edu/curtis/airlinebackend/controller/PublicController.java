@@ -4,9 +4,6 @@ import edu.curtis.airlinebackend.entity.*;
 import edu.curtis.airlinebackend.service.MyBatisService;
 import edu.curtis.airlinebackend.utility.Util;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -16,8 +13,6 @@ import java.util.*;
 public class PublicController {
     @Autowired
     private MyBatisService myBatisService;
-    @Autowired
-    private PlatformTransactionManager transactionManager;
 
 
     @GetMapping
@@ -37,8 +32,6 @@ public class PublicController {
 
     @PostMapping("/create-order")
     public String purchaseTicketForUser(@RequestBody RequestOrder requestOrder) {
-        TransactionStatus txStatus =
-                transactionManager.getTransaction(new DefaultTransactionDefinition());
         String ticketId = Util.genTicketId();
 
         //insert ticket record and return ticket
@@ -47,15 +40,7 @@ public class PublicController {
                 requestOrder.getCustomerEmail(),
                 requestOrder.getBookingAgentId(),
                 new Date());
-        try {
-            myBatisService.createTicket(t);
-            myBatisService.createPurchase(p);
-        } catch (Exception e) {
-            transactionManager.rollback(txStatus);
-            return "Error: Creating Order Failed.";
-        }
-        transactionManager.commit(txStatus);
 
-        return ticketId;
+        return myBatisService.createOrder(p, t);
     }
 }

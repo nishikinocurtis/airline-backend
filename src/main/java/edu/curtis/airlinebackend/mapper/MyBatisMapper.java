@@ -4,6 +4,7 @@ import edu.curtis.airlinebackend.entity.*;
 import org.apache.ibatis.annotations.*;
 import org.apache.ibatis.javassist.compiler.ast.Pair;
 import org.springframework.stereotype.Repository;
+import java.lang.Exception;
 
 import java.util.Date;
 import java.util.List;
@@ -13,10 +14,10 @@ import java.util.Map;
 public interface MyBatisMapper {
     // Public Part
     @Insert("INSERT INTO ticket VALUES (#{t.ticketId}, #{t.airlineName), #{t.flightNum}")
-    void insertTickets(Ticket t);
+    void insertTickets(Ticket t) throws Exception;
 
     @Insert("INSERT INTO purchases VALUES (#{p.ticketId}, #{p.customerEmail}, #{p.bookingAgentId}, #{p.purchaseDate})")
-    void insertPurchase(Purchase p);
+    void insertPurchase(Purchase p) throws Exception;
 
     @Select("SELECT * FROM flight f " +
             "WHERE departure_airport = #{deptPort} AND arrival_airport = #{arriPort} AND deptDate = #{date}")
@@ -80,16 +81,22 @@ public interface MyBatisMapper {
     @Select("SELECT * FROM flight WHERE airline_name = #{airlineName}")
     List<Flight> viewFlights(String airlineName);
 
+    @Select("SELECT * FROM flight WHERE airline_name = #{airlineName} AND departure_time >= #{dateFrom} AND departure_time <= #{dateTo}")
+    List<Flight> viewFlightsByDate(String airlineName, Date dateFrom, Date dateTo);
+
+    @Select("SELECT t.email FROM ticket t WHERE t.flight_num = #{flight}")
+    List<String> viewCustomersByFlight(String flight);
+
     @Insert("INSERT flight VALUES (#{f.airlineName}, #{f.flightNum}, #{f.departurePort}, " +
             "#{f.arrivalPort}, #{f.status}, #{f.airplaneId}, #{departureTime}, #{arrivalTime}, #{price})")
-    void createFlight(Flight f);
+    void createFlight(Flight f) throws Exception;
 
     @Update("UPDATE flight SET status = #{newStatus} WHERE airline_name = {airlineName} AND " +
             "flight_num = #{flightName} AND departure_time = #{deptTime}")
-    void flipFlightStatus(String airlineName, String flightNum, Date deptTime, String newStatus);
+    void flipFlightStatus(String airlineName, String flightNum, Date deptTime, String newStatus) throws Exception;
 
     @Insert("INSERT INTO airplane VALUES (#{a.airlineName}, #{a.airplaneId}, #{a.seats})")
-    void createAirplane(Airplane a);
+    void createAirplane(Airplane a) throws Exception;
 
     @Insert("INSERT INTO airport VALUES (#{a.name}, #{a.city})")
     void createAirport(Airport a);
