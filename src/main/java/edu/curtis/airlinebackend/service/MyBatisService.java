@@ -9,10 +9,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Controller
 public class MyBatisService {
@@ -36,11 +33,17 @@ public class MyBatisService {
                                         requestFlight.getDateTimeTo());
     }
 
-    public String createOrder(Purchase p, Ticket t) {
+    public String createOrder(Purchase p, Ticket t) { // notice agent affiliation
         TransactionStatus txStatus =
                 transactionManager.getTransaction(new DefaultTransactionDefinition());
 
         try {
+            if (!p.getBookingAgentId().equals("")) {
+                if (myBatisMapper.affiliationValidation(p.getBookingAgentId(), t.getAirlineName()).isEmpty()) {
+                    transactionManager.rollback(txStatus);
+                    return "Error: Affiliation not exists.";
+                }
+            }
             myBatisMapper.insertTickets(t);
             myBatisMapper.insertPurchase(p);
         } catch (Exception e) {
@@ -69,6 +72,10 @@ public class MyBatisService {
 
     public List<String> staffLoginVerification(String username, String password) {
         return myBatisMapper.staffLoginVerification(username, password);
+    }
+
+    public List<String> checkPermission(String username) {
+        return myBatisMapper.getPermissionList(username);
     }
 
     public double getTotalPaymentsByDate(String email, Date dateFrom, Date dateTo) {
@@ -123,5 +130,104 @@ public class MyBatisService {
         }
         transactionManager.commit(txStatus);
         return Boolean.TRUE;
+    }
+
+    public Boolean createAirport(Airport a) {
+        TransactionStatus txStatus =
+                transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+        try {
+            myBatisMapper.createAirport(a);
+        } catch (Exception e) {
+            transactionManager.rollback(txStatus);
+            return Boolean.FALSE;
+        }
+        transactionManager.commit(txStatus);
+        return Boolean.TRUE;
+    }
+
+    public Boolean grantPermission(StringPair sp) {
+        TransactionStatus txStatus =
+                transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+        try {
+            myBatisMapper.grantPermission(sp.getKey(), sp.getValue());
+        } catch (Exception e) {
+            transactionManager.rollback(txStatus);
+            return Boolean.FALSE;
+        }
+        transactionManager.commit(txStatus);
+        return Boolean.TRUE;
+    }
+
+    public Boolean createNewAgent(BookingAgent agent) {
+        TransactionStatus txStatus =
+                transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+        try {
+            myBatisMapper.insertBookingAgent(agent);
+        } catch (Exception e) {
+            transactionManager.rollback(txStatus);
+            return Boolean.FALSE;
+        }
+        transactionManager.commit(txStatus);
+        return Boolean.TRUE;
+    }
+
+    public Boolean addNewAgent(BookingAgentAffiliation af) {
+        TransactionStatus txStatus =
+                transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+        try {
+            myBatisMapper.addAgentToAirline(af);
+        } catch (Exception e) {
+            transactionManager.rollback(txStatus);
+            return Boolean.FALSE;
+        }
+        transactionManager.commit(txStatus);
+        return Boolean.TRUE;
+    }
+
+    public List<KVData> getFrequentCustomer(String airlineName, DateRange dateRange) {
+
+        return myBatisMapper.getCustomerRankInAirline(airlineName, dateRange.getDateFrom(), dateRange.getDateTo(), (int)dateRange.getValue());
+    }
+
+    public List<Record> getCustomerAllFlights(String email, String airlineName) {
+        return myBatisMapper.getTicketsByEmailInAirline(email, airlineName);
+    }
+
+    public List<KVData> getAgentRankByTicketNumber(String airlineName, DateRange dateRange) {
+        return myBatisMapper.getAgentRankByTicketNumber(airlineName, dateRange.getDateFrom(), dateRange.getDateTo(), (int)dateRange.getValue());
+    }
+
+    public List<KVData> getAgentRankByTotalPayments(String airlineName, DateRange dateRange) {
+        return myBatisMapper.getAgentRankByTotalPayments(airlineName, dateRange.getDateFrom(), dateRange.getDateTo(), (int)dateRange.getValue());
+    }
+
+    public Integer getTotalSales(String airlineName, Date dateFrom, Date dateTo) {
+        return myBatisMapper.getTotalSales(airlineName, dateFrom, dateTo);
+    }
+
+    public Map<String, Double> getComparison(String airline, DateRange dateRange) {
+        List<KVData> agentSum = myBatisMapper.getAgentRankByTotalPayments(airline, dateRange.getDateFrom(), dateRange.getDateTo(), 999);
+        Double nonAgent = 0.0;
+        Double agent = 0.0;
+        for (KVData item : agentSum) {
+            if (item.getKey().equals("")) {
+                nonAgent = item.getValue();
+            } else {
+                agent += item.getValue();
+            }
+        }
+
+        Map<String, Double> result = new HashMap<>();
+        result.put("agent", agent);
+        result.put("nonAgent", nonAgent);
+        return result;
+    }
+
+    public List<KVData> getTopDestinations(DateRange dateRange) {
+        return myBatisMapper.getDestinations(dateRange.getDateFrom(), dateRange.getDateTo(), (int)dateRange.getValue());
     }
 }

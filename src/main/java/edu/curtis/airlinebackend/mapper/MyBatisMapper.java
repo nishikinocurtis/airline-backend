@@ -77,6 +77,9 @@ public interface MyBatisMapper {
             "GROUP BY c.email")
     List<KVData> getCustomerRankByTicketPrice(String agentId, Date dateFrom, Date dateTo);
 
+    @Select("SELECT * FROM booking_agent_work_for WHERE email = #{email} AND airline_name = #{airlineName}")
+    List<StringPair> affiliationValidation(String email, String airlineName);
+
     // Staff Part
     @Select("SELECT * FROM flight WHERE airline_name = #{airlineName}")
     List<Flight> viewFlights(String airlineName);
@@ -102,37 +105,39 @@ public interface MyBatisMapper {
     void createAirport(Airport a);
 
     @Insert("INSERT INTO booking_agent VALUES (#{b.email}, #{b.password}, #{b.bookingAgentId})")
-    void createBookingAgent(BookingAgent b);
+    void insertBookingAgent(BookingAgent b);
 
     @Insert("INSERT INTO booking_agent_work_for VALUES (#{af.email}, #{af.airlineName})")
     void addAgentToAirline(BookingAgentAffiliation af);
 
-    @Insert("INSERT INTO permission VALUES (#{username}, #{prev})")
-    void grantPermission(String username, String prev); // Staff username and privilege.
+    @Insert("INSERT INTO permission VALUES (#{username}, #{priv})")
+    void grantPermission(String username, String priv); // Staff username and privilege.
 
     @Select("SELECT permission_type pt FROM permission WHERE username = #{username}")
-    @ResultType(java.lang.String.class)
     List<String> getPermissionList(String username);
 
     // Statistics Part
     @Select("SELECT p.booking_agent_id, COUNT(*) FROM purchases p " +
             "JOIN ticket t ON p.ticket_id = t.ticket_id " +
             "WHERE t.airline_name = #{airlineName} AND p.purchase_date > #{dateFrom} AND p.purchase_date < #{dateTo} " +
-            "GROUP BY p.booking_agent_id")
-    List<Map<String, Integer>> getAgentRankByTicketNumber(String airlineName, Date dateFrom, Date dateTo);
+            "GROUP BY p.booking_agent_id" +
+            "ORDER BY num DESC LIMIT #{limits}")
+    List<KVData> getAgentRankByTicketNumber(String airlineName, Date dateFrom, Date dateTo, int limits);
 
     @Select("SELECT p.booking_agent_id, SUM(f.price) FROM purchases p " +
             "JOIN ticket t ON p.ticket_id = t.ticket_id " +
             "JOIN flight f ON f.airline_num = t.flight_num " +
             "WHERE t.airline_name = #{airlineName} AND p.purchase_date > #{dateFrom} AND p.purchase_date < #{dateTo} " +
-            "GROUP BY p.booking_agent_id")
-    List<Map<String, Double>> getAgentRankByTotalPayments(String airlineName, Date dateFrom, Date dateTo);
+            "GROUP BY p.booking_agent_id" +
+            "ORDER BY num DESC LIMIT #{limits}")
+    List<KVData> getAgentRankByTotalPayments(String airlineName, Date dateFrom, Date dateTo, int limits);
 
-    @Select("SELECT p.customer_email, COUNT(*) FROM purchases p " +
+    @Select("SELECT p.customer_email email, COUNT(*) num FROM purchases p " +
             "JOIN ticket t ON p.ticket_id = t.ticket_id " +
             "WHERE t.airline_name = #{airlineName} AND p.purchase_date > #{dateFrom} AND p.purchase_date < #{dateTo} " +
-            "GROUP BY p.customer_email")
-    List<Map<String, Integer>> getCustomerRankInAirline(String airlineName, Date dateFrom, Date dateTo);
+            "GROUP BY p.customer_email" +
+            "ORDER BY num DESC LIMIT #{limits}")
+    List<KVData> getCustomerRankInAirline(String airlineName, Date dateFrom, Date dateTo, int limits);
 
     @Select("SELECT t.ticket_id, t.flight_num, f.departure_airport, f.arrival_airport, f.departure_time, f.arrival_time, f.price, f.status " +
             "FROM ticket t JOIN flight f ON t.flight_num = f.flight_num " +
@@ -146,14 +151,14 @@ public interface MyBatisMapper {
     @ResultType(java.lang.Integer.class)
     Integer getTotalSales(String airlineName, Date dateFrom, Date dateTo);
 
-    @Select("SELECT ap.name, ap.city, COUNT(*) as total FROM purchase p " +
+    @Select("SELECT ap.name name, COUNT(*) as total FROM purchase p " +
             "JOIN ticket t ON p.ticket_id = t.ticket_id " +
             "JOIN flight f ON f.flight_num = t.flight_num " +
-            "JOIN airport ap ON ap.name = flight.arrival_airport " +
-            "WHERE p.purchase_date > #{dateFrom} AND p.purchase_date < #{dateTo} " +
+            "JOIN airport ap ON ap.name = f.arrival_airport " +
+            "WHERE p.purchase_date >= #{dateFrom} AND p.purchase_date <= #{dateTo} " +
             "GROUP BY ap.name " +
             "ORDER BY total DESC LIMIT #{limits}")
-    List<Map<String, Integer>> getDestinations(Date dateFrom, Date dateTo, int limits);
+    List<KVData> getDestinations(Date dateFrom, Date dateTo, int limits);
 
     @Select("SELECT username FROM airline_staff WHERE username = #{Id} AND password = #{pwd}")
     List<String> staffLoginVerification(String Id, String pwd);

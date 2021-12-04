@@ -4,6 +4,7 @@ import org.springframework.stereotype.Controller;
 
 import java.util.Date;
 import java.util.Random;
+import java.util.UUID;
 
 @Controller
 public class Util {
@@ -14,5 +15,9 @@ public class Util {
         long ticketId = current.getTime();
         String result = Long.toString(ticketId) + Integer.toString(prefix);
         return result;
+    }
+
+    public static String genUUID() {
+        return UUID.randomUUID().toString();
     }
 }

@@ -43,4 +43,11 @@ public class PublicController {
 
         return myBatisService.createOrder(p, t);
     }
+
+    @PostMapping("/create-agent")
+    public Boolean createNewAgent(@RequestBody StringPair agentInfo) { //registration
+        String bookingAgentId = Util.genUUID();
+        BookingAgent agent = new BookingAgent(agentInfo.getKey(), agentInfo.getValue(), bookingAgentId);
+        return myBatisService.createNewAgent(agent);
+    }
 }

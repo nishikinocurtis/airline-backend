@@ -9,5 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class KVData {
     String key;
-    Number value;
+    Double value;
 }
