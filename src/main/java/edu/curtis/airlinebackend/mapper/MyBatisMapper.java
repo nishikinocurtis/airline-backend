@@ -36,10 +36,12 @@ public interface MyBatisMapper {
     List<Flight> getFlight(String deptPort, String arriPort, Date dateFrom, Date dateTo);
 
     // Customer Part
-    @Select("SELECT * FROM purchases p WHERE purchases.customer_email = #{email}" +
-            "JOIN customer c ON purchase.customer_email = customer.email" +
-            "JOIN ticket t ON ticket.ticket_id = purchase.ticket_id" +
-            "JOIN flight f ON ticket.flight_num = flight.flight_num")
+    @Select("SELECT t.ticket_id, p.customer_email, t.airline_name, t.flight_num, f.departure_airport, f.arrival_airport, f.status, f.departure_time, f.arrival_time, f.price " +
+            "FROM purchases p " +
+            "JOIN customer c ON p.customer_email = c.email " +
+            "JOIN ticket t ON t.ticket_id = p.ticket_id " +
+            "JOIN flight f ON t.flight_num = f.flight_num " +
+            "WHERE p.customer_email = #{email}")
     List<Record> getTicketsByEmail(String email);
     //TODO: Modify
 
@@ -50,10 +52,12 @@ public interface MyBatisMapper {
     double getTotalPaymentsByEmailAndDate(String email, Date dateFrom, Date dateTo);
 
     // Agent Part
-    @Select("SELECT * FROM purchases p WHERE purchases.booking_agent_id = #{agentId}" +
-            "JOIN customer c ON purchase.customer_email = customer.email" +
-            "JOIN ticket t ON ticket.ticket_id = purchase.ticket_id" +
-            "JOIN flight f ON ticket.flight_num = flight.flight_num")
+    @Select("SELECT t.ticket_id, p.customer_email, t.airline_name, t.flight_num, f.departure_airport, f.arrival_airport, f.status, f.departure_time, f.arrival_time, f.price  " +
+            "FROM purchases p " +
+            "JOIN customer c ON p.customer_email = c.email " +
+            "JOIN ticket t ON t.ticket_id = p.ticket_id " +
+            "JOIN flight f ON t.flight_num = f.flight_num " +
+            "WHERE p.booking_agent_id = #{agentId}")
     List<Record> getTicketsById(String agentId);
     //TODO: modify
 
@@ -139,10 +143,10 @@ public interface MyBatisMapper {
             "ORDER BY num DESC LIMIT #{limits}")
     List<KVData> getCustomerRankInAirline(String airlineName, Date dateFrom, Date dateTo, int limits);
 
-    @Select("SELECT t.ticket_id, t.flight_num, f.departure_airport, f.arrival_airport, f.departure_time, f.arrival_time, f.price, f.status " +
-            "FROM ticket t JOIN flight f ON t.flight_num = f.flight_num " +
-            "WHERE t.customer_email = #{email} AND t.airline_name = #{airlineName}")
-    @Results()
+    @Select("SELECT t.ticket_id, p.customer_email, t.airline_name, t.flight_num, f.departure_airport, f.arrival_airport, f.status, f.departure_time, f.arrival_time, f.price " +
+            "FROM ticket t JOIN flight f ON t.flight_num = f.flight_num" +
+            "JOIN purchases p ON p.ticket_id = t.ticket_id " +
+            "WHERE p.customer_email = #{email} AND t.airline_name = #{airlineName}")
     List<Record> getTicketsByEmailInAirline(String email, String airlineName);
 
     @Select("SELECT COUNT(*) as total FROM ticket t " +

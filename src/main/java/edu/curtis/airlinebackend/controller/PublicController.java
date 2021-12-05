@@ -21,7 +21,7 @@ public class PublicController {
     }
 
     @GetMapping("/search-airport")
-    public List<Airport> searchAirport(String nameString) {
+    public List<Airport> searchAirport(@RequestParam("name") String nameString) {
         return myBatisService.searchAirport(nameString);
     }
 
@@ -45,9 +45,13 @@ public class PublicController {
     }
 
     @PostMapping("/create-agent")
-    public Boolean createNewAgent(@RequestBody StringPair agentInfo) { //registration
+    public String createNewAgent(@RequestBody LoginRequest agentInfo) { //registration
         String bookingAgentId = Util.genUUID();
-        BookingAgent agent = new BookingAgent(agentInfo.getKey(), agentInfo.getValue(), bookingAgentId);
-        return myBatisService.createNewAgent(agent);
+        BookingAgent agent = new BookingAgent(agentInfo.getVId(), agentInfo.getVPassword(), bookingAgentId);
+        if (myBatisService.createNewAgent(agent)) {
+            return bookingAgentId;
+        } else {
+            return "Error: Creating Agent Failed.";
+        }
     }
 }

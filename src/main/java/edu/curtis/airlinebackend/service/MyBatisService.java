@@ -54,6 +54,14 @@ public class MyBatisService {
         return t.getTicketId();
     }
 
+    public List<Record> viewTicketsByEmail(String email) {
+        return myBatisMapper.getTicketsByEmail(email);
+    }
+
+    public List<Record> viewTicketsByAgentId(String agentId) {
+        return myBatisMapper.getTicketsById(agentId);
+    }
+
     public double getCommissionById(String Id, Date dateFrom, Date dateTo) {
         return myBatisMapper.getTotalSellsByIdAndDate(Id, dateFrom, dateTo);
     }

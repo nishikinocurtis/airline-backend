@@ -20,11 +20,9 @@ public class AgentController {
         return "API init";
     }
 
-    //TODO: To be modified
     @PostMapping("/view-my-flights")
     public List<Record> viewMyFlights(@RequestBody RequestAgent requestAgent) {
-        List<Record> result = new ArrayList<>();
-        return result;
+        return myBatisService.viewTicketsByAgentId(requestAgent.getBookingAgentId());
     }
 
     @PostMapping("/view-commission")

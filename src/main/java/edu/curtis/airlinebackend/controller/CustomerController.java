@@ -27,11 +27,9 @@ public class CustomerController {
         return !result.isEmpty();
     }
 
-    // TODO: to be modified
     @PostMapping("/view-my-flights")
     public List<Record> viewMyFlights(@RequestBody String email) {
-        List<Record> result = new ArrayList<>();
-        return result;
+        return myBatisService.viewTicketsByEmail(email);
     }
 
     @PostMapping("/track-spending")
