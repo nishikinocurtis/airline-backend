@@ -32,7 +32,7 @@ public class PublicController {
 
     @PostMapping("/create-order")
     public String purchaseTicketForUser(@RequestBody RequestOrder requestOrder) {
-        String ticketId = Util.genTicketId();
+        String ticketId = Util.genUUID();
 
         //insert ticket record and return ticket
         Ticket t = new Ticket(ticketId, requestOrder.getAirlineName(), requestOrder.getFlightNum());
@@ -47,11 +47,22 @@ public class PublicController {
     @PostMapping("/create-agent")
     public String createNewAgent(@RequestBody LoginRequest agentInfo) { //registration
         String bookingAgentId = Util.genUUID();
-        BookingAgent agent = new BookingAgent(agentInfo.getVId(), agentInfo.getVPassword(), bookingAgentId);
+        BookingAgent agent = new BookingAgent(agentInfo.getVid(), agentInfo.getVpassword(), bookingAgentId);
+        System.out.println(agentInfo.getVid());
+        System.out.println(agentInfo.getVpassword());
         if (myBatisService.createNewAgent(agent)) {
             return bookingAgentId;
         } else {
             return "Error: Creating Agent Failed.";
         }
+    }
+
+    @PostMapping("/create-customer")
+    public String createCustomer(@RequestBody Customer customer) {
+        String result = myBatisService.customerRegistration(customer.getEmail(), customer.getName(),
+                customer.getPassword(), customer.getBuildingNumber(), customer.getStreet(), customer.getCity(),
+                customer.getState(), customer.getPhoneNumber(), customer.getPassportNumber(), customer.getPassportExpiration(),
+                customer.getPassportCountry(), customer.getDateOfBirth());
+        return result;
     }
 }

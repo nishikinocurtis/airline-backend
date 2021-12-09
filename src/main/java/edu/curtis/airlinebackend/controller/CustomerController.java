@@ -2,12 +2,10 @@ package edu.curtis.airlinebackend.controller;
 
 import edu.curtis.airlinebackend.entity.*;
 import edu.curtis.airlinebackend.service.MyBatisService;
-import edu.curtis.airlinebackend.utility.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -22,8 +20,8 @@ public class CustomerController {
     @PostMapping("/verification")
     public Boolean loginVerification(@RequestBody LoginRequest loginRequest) {
         List<String> result = myBatisService.loginVerification(
-                loginRequest.getVId(),
-                loginRequest.getVPassword(), "customer");
+                loginRequest.getVid(),
+                loginRequest.getVpassword(), "customer");
         return !result.isEmpty();
     }
 
@@ -36,7 +34,7 @@ public class CustomerController {
     public List<DateRange> trackSpending(@RequestBody ListKVDateData query) {
         List<DateRange> result = new ArrayList<>();
         for (DateRange range : query.getData()) {
-            double rangeResult = myBatisService.getTotalPaymentsByDate(query.getKey(), range.getDateFrom(), range.getDateTo());
+            Double rangeResult = myBatisService.getTotalPaymentsByDate(query.getKey(), range.getDateFrom(), range.getDateTo());
             DateRange item = new DateRange(range.getDateFrom(), range.getDateTo(), rangeResult);
             result.add(item);
         }

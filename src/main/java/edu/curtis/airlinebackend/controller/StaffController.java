@@ -2,7 +2,6 @@ package edu.curtis.airlinebackend.controller;
 
 import edu.curtis.airlinebackend.entity.*;
 import edu.curtis.airlinebackend.service.MyBatisService;
-import edu.curtis.airlinebackend.utility.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,13 +14,20 @@ public class StaffController {
     private MyBatisService myBatisService;
 
     @PostMapping("/verification")
-    public Boolean loginVerification(@RequestBody LoginRequest loginRequest) {
-        return !myBatisService.staffLoginVerification(loginRequest.getVId(), loginRequest.getVPassword()).isEmpty();
+    public String loginVerification(@RequestBody LoginRequest loginRequest) {
+        List<String> tmp = myBatisService.staffLoginVerification(loginRequest.getVid(), loginRequest.getVpassword());
+        if (tmp.isEmpty()) return "";
+        else return tmp.get(0);
     }
 
     @PostMapping("/get-permission")
     public List<String> checkPermission(@RequestBody String username) {
-        return myBatisService.checkPermission(username);
+        List<String> tmp = myBatisService.getAirlineByUsername(username);
+        if (!tmp.isEmpty()) {
+            tmp.addAll(myBatisService.checkPermission(username));
+            return tmp;
+        }
+        return new ArrayList<>();
     }
 
     @PostMapping("/view-flights")
@@ -100,17 +106,17 @@ public class StaffController {
         List<DateRange> result = new ArrayList<>();
         for (DateRange dateRange : query.getData()) {
             Integer number = myBatisService.getTotalSales(query.getKey(), dateRange.getDateFrom(), dateRange.getDateTo());
-            result.add(new DateRange(dateRange.getDateFrom(), dateRange.getDateTo(), number));
+            result.add(new DateRange(dateRange.getDateFrom(), dateRange.getDateTo(), number.doubleValue()));
         }
         // need to be summed up by front-end.
         return result;
     }
 
     @PostMapping("/comparison")
-    public List<Map<String, Double>> viewComparison(@RequestBody ListKVDateData query) {
-        List<Map<String, Double>> result = new ArrayList<>();
+    public Map<String, Double> viewComparison(@RequestBody ListKVDateData query) {
+        Map<String, Double> result = new HashMap<>();
         for (DateRange dateRange : query.getData()) {
-            result.add(myBatisService.getComparison(query.getKey(), dateRange));
+            return myBatisService.getComparison(query.getKey(), dateRange);
         }
         return result;
     }
@@ -120,6 +126,7 @@ public class StaffController {
         Map<String, List<KVData>> result = new HashMap<>();
         Integer counter = 0;
         for (DateRange dateRange : query.getData()) {
+            System.out.println(counter);
             result.put(counter.toString(), myBatisService.getTopDestinations(dateRange));
             counter++;
         }

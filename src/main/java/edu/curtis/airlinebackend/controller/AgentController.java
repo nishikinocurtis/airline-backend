@@ -2,7 +2,6 @@ package edu.curtis.airlinebackend.controller;
 
 import edu.curtis.airlinebackend.entity.*;
 import edu.curtis.airlinebackend.service.MyBatisService;
-import edu.curtis.airlinebackend.utility.Util;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -26,7 +25,7 @@ public class AgentController {
     }
 
     @PostMapping("/view-commission")
-    public double viewMyCommission(@RequestBody RequestAgent requestAgent) {
+    public Double viewMyCommission(@RequestBody RequestAgent requestAgent) {
         return myBatisService.getCommissionById(requestAgent.getBookingAgentId(),
                 requestAgent.getDateFrom(),
                 requestAgent.getDateTo());
@@ -49,8 +48,8 @@ public class AgentController {
     @PostMapping("/verification")
     public Boolean loginVerification(@RequestBody LoginRequest loginRequest) {
         List<String> result = myBatisService.loginVerification(
-                loginRequest.getVId(),
-                loginRequest.getVPassword(), "agent");
+                loginRequest.getVid(),
+                loginRequest.getVpassword(), "agent");
         return !result.isEmpty();
     }
 

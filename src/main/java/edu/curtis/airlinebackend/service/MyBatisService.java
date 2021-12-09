@@ -27,10 +27,18 @@ public class MyBatisService {
     }
 
     public List<Flight> searchFlight(RequestFlight requestFlight) {
-        return myBatisMapper.getFlight( requestFlight.getDeparturePort(),
-                                        requestFlight.getArrivalPort(),
-                                        requestFlight.getDateTimeFrom(),
-                                        requestFlight.getDateTimeTo());
+        System.out.println(requestFlight.toString());
+        try {
+            List<Flight> result = myBatisMapper.getFlight( requestFlight.getDeparturePort(),
+                    requestFlight.getArrivalPort(),
+                    requestFlight.getDateFrom(),
+                    requestFlight.getDateTo());
+            return result;
+        } catch (Exception e) {
+            System.out.println(e);
+            return new ArrayList<>();
+        }
+
     }
 
     public String createOrder(Purchase p, Ticket t) { // notice agent affiliation
@@ -48,21 +56,44 @@ public class MyBatisService {
             myBatisMapper.insertPurchase(p);
         } catch (Exception e) {
             transactionManager.rollback(txStatus);
-            return "Error: Creating Order Failed.";
+            return e.getMessage();
         }
         transactionManager.commit(txStatus);
         return t.getTicketId();
     }
 
+    public String customerRegistration(String email, String name, String password, String building_number, String street, String city,
+                                       String state, String phone_number, String passport_number, Date passport_exp, String passport_country,
+                                       Date DOB) { // notice agent affiliation
+        TransactionStatus txStatus =
+                transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+        try {
+            myBatisMapper.customerRegistration(email, name, password, building_number, street, city, state,
+                    phone_number, passport_number, passport_exp, passport_country, DOB);
+        } catch (Exception e) {
+            transactionManager.rollback(txStatus);
+            return "Error: Creating Customer Failed.";
+        }
+        transactionManager.commit(txStatus);
+        return email;
+    }
+
     public List<Record> viewTicketsByEmail(String email) {
-        return myBatisMapper.getTicketsByEmail(email);
+        System.out.println(email);
+        try {
+            return myBatisMapper.getTicketsByEmail(email);
+        } catch (Exception e) {
+            System.out.println(e);
+            return new ArrayList<>();
+        }
     }
 
     public List<Record> viewTicketsByAgentId(String agentId) {
         return myBatisMapper.getTicketsById(agentId);
     }
 
-    public double getCommissionById(String Id, Date dateFrom, Date dateTo) {
+    public Double getCommissionById(String Id, Date dateFrom, Date dateTo) {
         return myBatisMapper.getTotalSellsByIdAndDate(Id, dateFrom, dateTo);
     }
 
@@ -75,7 +106,8 @@ public class MyBatisService {
     }
 
     public List<String> loginVerification(String Id, String password, String role) {
-        return myBatisMapper.loginVerification(Id, password, role);
+        if (role.equals("agent")) return myBatisMapper.agentLoginVerification(Id, password);
+        else return myBatisMapper.loginVerification(Id, password, role);
     }
 
     public List<String> staffLoginVerification(String username, String password) {
@@ -86,7 +118,7 @@ public class MyBatisService {
         return myBatisMapper.getPermissionList(username);
     }
 
-    public double getTotalPaymentsByDate(String email, Date dateFrom, Date dateTo) {
+    public Double getTotalPaymentsByDate(String email, Date dateFrom, Date dateTo) {
         return myBatisMapper.getTotalPaymentsByEmailAndDate(email, dateFrom, dateTo);
     }
 
@@ -105,6 +137,7 @@ public class MyBatisService {
         try {
             myBatisMapper.createFlight(f);
         } catch (Exception e) {
+            System.out.println(e);
             transactionManager.rollback(txStatus);
             return Boolean.FALSE;
         }
@@ -119,6 +152,7 @@ public class MyBatisService {
         try {
             myBatisMapper.flipFlightStatus(flight.getAirlineName(), flight.getFlightNum(), flight.getDepartureTime(), flight.getStatus());
         } catch (Exception e) {
+            System.out.println(e);
             transactionManager.rollback(txStatus);
             return Boolean.FALSE;
         }
@@ -133,6 +167,7 @@ public class MyBatisService {
         try {
             myBatisMapper.createAirplane(a);
         } catch (Exception e) {
+            System.out.println(e);
             transactionManager.rollback(txStatus);
             return Boolean.FALSE;
         }
@@ -147,6 +182,7 @@ public class MyBatisService {
         try {
             myBatisMapper.createAirport(a);
         } catch (Exception e) {
+            System.out.println(e);
             transactionManager.rollback(txStatus);
             return Boolean.FALSE;
         }
@@ -175,6 +211,7 @@ public class MyBatisService {
         try {
             myBatisMapper.insertBookingAgent(agent);
         } catch (Exception e) {
+            System.out.println(e);
             transactionManager.rollback(txStatus);
             return Boolean.FALSE;
         }
@@ -197,8 +234,7 @@ public class MyBatisService {
     }
 
     public List<KVData> getFrequentCustomer(String airlineName, DateRange dateRange) {
-
-        return myBatisMapper.getCustomerRankInAirline(airlineName, dateRange.getDateFrom(), dateRange.getDateTo(), (int)dateRange.getValue());
+        return myBatisMapper.getCustomerRankInAirline(airlineName, dateRange.getDateFrom(), dateRange.getDateTo(), dateRange.getValue().intValue());
     }
 
     public List<Record> getCustomerAllFlights(String email, String airlineName) {
@@ -206,11 +242,11 @@ public class MyBatisService {
     }
 
     public List<KVData> getAgentRankByTicketNumber(String airlineName, DateRange dateRange) {
-        return myBatisMapper.getAgentRankByTicketNumber(airlineName, dateRange.getDateFrom(), dateRange.getDateTo(), (int)dateRange.getValue());
+        return myBatisMapper.getAgentRankByTicketNumber(airlineName, dateRange.getDateFrom(), dateRange.getDateTo(), dateRange.getValue().intValue());
     }
 
     public List<KVData> getAgentRankByTotalPayments(String airlineName, DateRange dateRange) {
-        return myBatisMapper.getAgentRankByTotalPayments(airlineName, dateRange.getDateFrom(), dateRange.getDateTo(), (int)dateRange.getValue());
+        return myBatisMapper.getAgentRankByTotalPayments(airlineName, dateRange.getDateFrom(), dateRange.getDateTo(), dateRange.getValue().intValue());
     }
 
     public Integer getTotalSales(String airlineName, Date dateFrom, Date dateTo) {
@@ -236,6 +272,10 @@ public class MyBatisService {
     }
 
     public List<KVData> getTopDestinations(DateRange dateRange) {
-        return myBatisMapper.getDestinations(dateRange.getDateFrom(), dateRange.getDateTo(), (int)dateRange.getValue());
+        return myBatisMapper.getDestinations(dateRange.getDateFrom(), dateRange.getDateTo(), dateRange.getValue().intValue());
+    }
+
+    public List<String> getAirlineByUsername(String username) {
+        return myBatisMapper.getAirline(username);
     }
 }

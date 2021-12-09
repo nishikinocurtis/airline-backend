@@ -11,5 +11,5 @@ import java.util.Date;
 @NoArgsConstructor
 @AllArgsConstructor
 public class BookingAgentAffiliation {
-    String email, airlineName;
+    String email, airlineName; // all emails are now id.
 }
